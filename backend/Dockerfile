@@ -11,14 +11,11 @@ COPY src ./src
 RUN mvn -q -B clean package -DskipTests
 
 # --- Runtime stage -----------------------------------------------------------
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-RUN addgroup -S elevate && adduser -S elevate -G elevate
 COPY --from=build /build/target/elevate-backend.jar app.jar
-RUN chown elevate:elevate app.jar
-USER elevate
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-jar", "app.jar"]
+ENTRYPOINT ["sh", "-c", "java -XX:+UseContainerSupport -jar app.jar --server.port=${PORT:-8080}"]
